@@ -1,0 +1,136 @@
+<!--
+	THIS EXAMPLE WAS DOWNLOADED FROM https://echarts.apache.org/examples/en/editor.html?c=bar-gradient&code=DYUwLgBAJghmMEEAeBLAzhAvBA2gcgCYAGARgFY8AaQ0gNippIHYHiSAOV0gTi-L5J8CfAMx8ALHgC6AbgBQAegUQADgCdwYFCDUBaFAHMAdgHsNc0JFjwsuEe1oA6JpQLcyjoq5IlHZSky04o7slOLcTI7clGTcviKU9ux-lNz2jrRhtB6ZIkzJBLIW4BAAngCyMEi2ZERE8pbQcDAAygAWMFAmAO62OEUAZmYQABSNKLb1EBMAPE3wjqBGBmBtMtMA1BsAlBAA3nIQ860dXd2OKgCuaG0jFVXb8gC-cnImKlomRrYHR1pgoAAXPtDkcIGAQEgwMC8AA1EzAS4AWxA0FRAGM2pcAG4wCAwdHIy7ATp4lTDGCmUZsMj4iDEAjibZUUFHNCXABGEKhMIAYjAAF4gIywCAAYRgaiMMAAXxy8boIAAVGAqHQmACHEEVAAUAEJ4UFPSigsAmBFaFSAvbG0FIZDoYG_MHWGDA10OtAmsH41BoAAyMA5IGATtZYJQRjQKCgIGBYDUlxA3p9EHRCLMMIAxANc4afbafVV0EqUOiANZh1MQG49YEDGDANAgcOFsHFgORuMg6u17r1xvN1spo4C4EkIhGlOlT1V9t-_1duc-vsDpvJ4dyACQ0pRMKVJngwDRaaxuNGSKRzJHvpLZcrPdTq4gDfXm6LC6DIeXYPTwEzEB4Fm3AgfmYIvEcbaugAWuaSLAjg4bOj6YClGqMKRtGsZgZBoJSCmzZqNoaAIUh4Z_Gh3Z4PKagsluRy7lRB5HiemI4niIyXte5E1m0PR6gS5YGGoJiXCK8aJhu1YoBCSItKhQKPtWf4AUYIC9CAmKSmAaCOMJqptGWjiLmpkoAOJqJ02hGGAIxeBA9n2SQlC4DxPp7BAJi5s20IOS5KlqNm7AiByub0BAbbVkcHleQMPnAkQKRphmgWAVmHDsFAAxEHgEU3tWMXeeA47-Sl2YZVlOURW5EBSNsPGRWCIBIioHTRiRSmpjJzXyaUinIVFAXAmpGlaWoOl6ZZrVGSZIDmZZUDWbZjkuU5LmIVFqaFXFxV-cl_6pUBBB5OwAwsHlNXuZ5RW-YlLj7QBR0nWduWNZt23xRAzkPYdWbBaFAzhRBm21fVm3AwW-XHO6zStnhchPPISgQAAotKHKgMcEACnBEDdG0woQNcOhpsA94QDRjhyOmUaQDjJhySgQq2LQ8hIqUYodONjhfCMeDomTFZUC-Ynop83wjCokowEiaC7M6NNoAiICLCYBgjB6fo4JUqyOEiVSS9LsuOK6ACSIqQtq2NwS0TOosoBCrdsdXyEc7Oc9pJvoFLYCYggYsoLzA2oehgEwXBLIrvA42wo2SYw_Anra3AbR6wbUuWcbZsW9Uir04zzMO07-HhsKUCx4icY8Zr6DJ7rSKRobme6dnsbVBs1sM7bhf0i5rqLMKKxtFbJDO0ajwI48QA
+	⚠ Please be aware that this chart is not an official demo of Apache ECharts but is made by user-generated code.
+-->
+<!DOCTYPE html>
+<html lang="en" style="height: 100%">
+<head>
+  <meta charset="utf-8">
+</head>
+<body style="height: 100%; margin: 0">
+  <div id="container" style="height: 100%"></div>
+
+  
+  <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  
+  <!-- Uncomment this line if you want to dataTool extension
+  <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@5/dist/extension/dataTool.min.js"></script>
+  -->
+  <!-- Uncomment this line if you want to use gl extension
+  <script type="text/javascript" src="https://echarts.apache.org/en/js/vendors/echarts-gl/dist/echarts-gl.min.js"></script>
+  -->
+  <!-- Uncomment this line if you want to echarts-stat extension
+  <script type="text/javascript" src="https://echarts.apache.org/en/js/vendors/echarts-stat/dist/ecStat.min.js"></script>
+  -->
+  <!-- Uncomment this line if you want to echarts-graph-modularity extension
+  <script type="text/javascript" src="https://echarts.apache.org/en/js/vendors/echarts-graph-modularity/dist/echarts-graph-modularity.min.js"></script>
+  -->
+  <!-- Uncomment this line if you want to use map
+  <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
+  -->
+  <!-- Uncomment these two lines if you want to use bmap extension
+  <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=YOUR_API_KEY"></script>
+  <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@5/dist/extension/bmap.min.js"></script>
+  -->
+
+  <script type="text/javascript">
+    var dom = document.getElementById('container');
+    var myChart = echarts.init(dom, null, {
+      renderer: 'canvas',
+      useDirtyRect: false
+    });
+    var app = {};
+    
+    var option;
+
+    let dataAxis = ['2015','2016','2017','2018','2019','2020','2021','2022','2023','2024'];
+// prettier-ignore
+let data = [386.7,295.0,211.5,764.8,497.9,591.3,388.5,938.6,465.6,378.2];
+let yMax = 500;
+let dataShadow = [];
+for (let i = 0; i < data.length; i++) {
+  dataShadow.push(yMax);
+}
+
+option = {
+  title: {
+    text: 'Volume de chuva acumulada por ano (2015 a 2024)',
+    subtext: 'Fazenda Carnaúba - Taperoá - PB'
+  },
+  tooltip:{},
+  xAxis: {
+    data: dataAxis,
+    axisLabel: {
+      inside: true,
+      color: '#fff'
+    },
+    axisTick: {
+      show: false
+    },
+    axisLine: {
+      show: false
+    },
+    z: 10
+  },
+  yAxis: {
+    axisLine: {
+      show: false,
+    },
+	name: 'Total de chuva (mm)',
+    axisTick: {
+      show: false
+    },
+    axisLabel: {
+      color: '#999'
+    }
+  },
+  dataZoom: [
+    {
+      type: 'inside'
+    }
+  ],
+  series: [
+    {
+      type: 'bar',
+	  name: 'Total de chuva (mm)',
+      showBackground: true,
+      itemStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: '#83bff6' },
+          { offset: 0.5, color: '#188df0' },
+          { offset: 1, color: '#188df0' }
+        ])
+      },
+      emphasis: {
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: '#2378f7' },
+            { offset: 0.7, color: '#2378f7' },
+            { offset: 1, color: '#83bff6' }
+          ])
+        }
+      },
+      data: data
+    }
+  ]
+};
+// Enable data zoom when user click bar.
+const zoomSize = 6;
+myChart.on('click', function (params) {
+  console.log(dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)]);
+  myChart.dispatchAction({
+    type: 'dataZoom',
+    startValue: dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)],
+    endValue:
+      dataAxis[Math.min(params.dataIndex + zoomSize / 2, data.length - 1)]
+  });
+}); 
+
+    if (option && typeof option === 'object') {
+      myChart.setOption(option);
+    }
+
+    window.addEventListener('resize', myChart.resize);
+  </script>
+</body>
+</html>
