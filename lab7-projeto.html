@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR" style="height: 100%">
+<head>
+  <meta charset="utf-8">
+  <title>Balança Comercial Brasileira</title>
+  <!-- Importando ECharts -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <!-- Importando mapa do mundo -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts/map/js/world.js"></script>
+</head>
+<body style="margin:0;  height:100%; font-family:sans-serif; background:#f8f9fa;">
+
+  <h2 style="text-align:center; margin:16px 0;">Balança Comercial Brasileira (1997–2025)</h2>
+  
+  <!-- Container único unificado para os gráficos -->
+
+  <div style=" width:100%;">
+    <div id="mapa" style="width:100%; height:400px; background:#f8f9fa "></div>
+    <div id="linha" style="width:100%; height:500px; background:#f8f9fa"></div>
+  </div>
+
+  <script>
+    async function carregarDados() {
+      const response = await fetch("BR-exportacoes_importacoes_2025.json");
+      const dados = await response.json();
+      return dados;
+    }
+
+    carregarDados().then(dados => {
+      inicializarGraficos(dados);
+    });
+
+    function inicializarGraficos(dados) {
+      const mapa = echarts.init(document.getElementById('mapa'));
+      const linha = echarts.init(document.getElementById('linha'));
+
+      // --- Construir dados do mapa (2025 BAL) ---
+      const anoRef = "2025";
+      const dados2025 = dados["BAL"][anoRef];
+
+      // Converter para bilhões
+      const serieMapa = dados2025.map(d => ({
+        name: d.name,
+        value: d.us_value / 1e9
+      }));
+
+      const valores = serieMapa.map(d => d.value);
+      const minVal = Math.min(...valores);
+      const maxVal = Math.max(...valores);
+
+      const opcoesMapa = {
+        title: { text: 'Balança Comercial em 2025 (US$ bilhões)', left: 'center' },
+        tooltip: { 
+          trigger: 'item',
+          formatter: params => `${params.name}<br/>Saldo: ${params.value.toFixed(2)} bi US$`
+        },
+        visualMap: {
+          min: minVal,
+          max: maxVal,
+          text: ['Maior', 'Menor'],
+          realtime: true,
+          calculable: true,
+          inRange: { color: ['#f7fbff','#deebf7','#c6dbef','#9ecae1','#6baed6','#4292c6','#2171b5','#08519c','#08306b'] }
+        },
+        series: [{
+          type: 'map',
+          map: 'world',
+          roam: true,
+          emphasis: { label: { show: true } },
+          data: serieMapa
+        }]
+      };
+
+      mapa.setOption(opcoesMapa);
+
+      // Interação: clique no país → atualizar gráfico de linha
+      mapa.on('click', function(params) {
+        const pais = params.name;
+        atualizarLinha(linha, dados, pais);
+      });
+
+      // Inicializa vazio
+      linha.setOption({
+        title: { text: "Selecione um país no mapa", left: "center" }
+      });
+    }
+
+    function atualizarLinha(linha, dados, pais) {
+      const anos = Object.keys(dados["EXP"]).sort();
+
+      // Converter tudo para bilhões
+      const exp = anos.map(ano => {
+        const entry = dados["EXP"][ano].find(d => d.name === pais);
+        return entry ? entry.us_value / 1e9 : 0;
+      });
+
+      const imp = anos.map(ano => {
+        const entry = dados["IMP"][ano].find(d => d.name === pais);
+        return entry ? entry.us_value / 1e9 : 0;
+      });
+
+      const bal = anos.map(ano => {
+        const entry = dados["BAL"][ano].find(d => d.name === pais);
+        return entry ? entry.us_value / 1e9 : 0;
+      });
+
+      const opcoesLinha = {
+        title: { text: `Exportações, Importações e Balança - ${pais}`, left: 'center' },
+        tooltip: { 
+          trigger: 'axis',
+          valueFormatter: v => `${v.toFixed(2)} bi US$`
+        },
+        legend: { data: ['Exportações','Importações','Balança'], top: 30 },
+        xAxis: { type: 'category', data: anos, name: 'Ano' },
+        yAxis: { type: 'value', name: 'US$ em bilhões' },
+        series: [
+          { name:'Exportações', type:'line', smooth:true, data: exp },
+          { name:'Importações', type:'line', smooth:true, data: imp },
+          { name:'Balança', type:'line', smooth:true, data: bal }
+        ]
+      };
+
+      linha.setOption(opcoesLinha);
+    }
+  </script>
+</body>
+</html>
