@@ -8,14 +8,29 @@
   <!-- Importando mapa do mundo -->
   <script src="https://cdn.jsdelivr.net/npm/echarts/map/js/world.js"></script>
 </head>
-<body style="margin:0;  height:100%; font-family:sans-serif; background:#f8f9fa;">
+<body style="margin:0; height:100%; font-family:sans-serif; background:#f8f9fa;">
 
   <h2 style="text-align:center; margin:16px 0;">Balança Comercial Brasileira (1997–2025)</h2>
   
-  <!-- Container único unificado para os gráficos -->
+  <!-- Seletor no canto superior direito -->
+  <div style="position:absolute; top:20px; right:20px; z-index:1000; background:white; padding:6px 10px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.2);">
+    <label for="tipo">Mostrar: </label>
+    <select id="tipo">
+      <option value="EXP">Exportações</option>
+      <option value="IMP">Importações</option>
+      <option value="BAL" selected>Balança Comercial</option>
+    </select>
+  </div>
 
-  <div style=" width:100%;">
-    <div id="mapa" style="width:100%; height:400px; background:#f8f9fa "></div>
+  <!-- Checkbox no canto inferior direito -->
+  <div style="position:absolute; top:60px; right:20px; z-index:1000; background:white; padding:6px 10px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.2);">
+    <label>
+      <input type="checkbox" id="mostrarSemDados"> Mostrar países sem dados
+    </label>
+  </div>
+
+  <div style="width:100%;">
+    <div id="mapa" style="width:100%; height:400px; background:#f8f9fa"></div>
     <div id="linha" style="width:100%; height:500px; background:#f8f9fa"></div>
   </div>
 
@@ -34,25 +49,81 @@
       const mapa = echarts.init(document.getElementById('mapa'));
       const linha = echarts.init(document.getElementById('linha'));
 
-      // --- Construir dados do mapa (2025 BAL) ---
-      const anoRef = "2025";
-      const dados2025 = dados["BAL"][anoRef];
+      const seletor = document.getElementById("tipo");
+      const chkSemDados = document.getElementById("mostrarSemDados");
 
-      // Converter para bilhões
-      const serieMapa = dados2025.map(d => ({
+      atualizarMapa(mapa, dados, seletor.value, chkSemDados.checked);
+
+      seletor.addEventListener("change", () => {
+        atualizarMapa(mapa, dados, seletor.value, chkSemDados.checked);
+        linha.setOption({ title: { text: "Selecione um país no mapa", left: "center" }, series: [] });
+      });
+
+      chkSemDados.addEventListener("change", () => {
+        atualizarMapa(mapa, dados, seletor.value, chkSemDados.checked);
+      });
+
+      mapa.on('click', function(params) {
+        const pais = params.name;
+        atualizarLinha(linha, dados, pais);
+      });
+
+      linha.setOption({
+        title: { text: "Selecione um país no mapa", left: "center" }
+      });
+    }
+
+    function atualizarMapa(mapa, dados, tipo, mostrarSemDados) {
+      const anoRef = "2025";
+      const dadosAno = dados[tipo][anoRef];
+
+      const serieMapa = dadosAno.map(d => ({
         name: d.name,
         value: d.us_value / 1e9
       }));
+
+      // --- Identificar países sem dados ---
+      const paisesComDados = new Set(dadosAno.map(d => d.name));
+      const geo = echarts.getMap("world").geoJson;
+      const todosPaises = geo.features.map(f => f.properties.name);
+
+      let serieSemDados = [];
+      if (mostrarSemDados) {
+        serieSemDados = todosPaises
+          .filter(p => !paisesComDados.has(p))
+          .map(p => ({ name: p, value: 0, itemStyle: { color: "black" } }));
+      }
 
       const valores = serieMapa.map(d => d.value);
       const minVal = Math.min(...valores);
       const maxVal = Math.max(...valores);
 
+      const titulo = {
+        "EXP": "Exportações",
+        "IMP": "Importações",
+        "BAL": "Balança Comercial"
+      };
+
+      // Definir cores
+      let cores = [];
+      if (tipo === "EXP") {
+        cores = ['#ffcccc', '#ff0000'];
+      } else if (tipo === "IMP") {
+        cores = ['#cce5ff', '#0033cc'];
+      } else if (tipo === "BAL") {
+        cores = ['#ff0000', '#ffffff', '#008000'];
+      }
+
       const opcoesMapa = {
-        title: { text: 'Balança Comercial em 2025 (US$ bilhões)', left: 'center' },
+        title: { text: `${titulo[tipo]} em 2025 (US$ bilhões)`, left: 'center' },
         tooltip: { 
           trigger: 'item',
-          formatter: params => `${params.name}<br/>Saldo: ${params.value.toFixed(2)} bi US$`
+          formatter: params => {
+            if (!params.value || params.value === 0 && params.data?.itemStyle?.color === "black") {
+              return `${params.name}<br/>Sem dados`;
+            }
+            return `${params.name}<br/>${titulo[tipo]}: ${params.value.toFixed(2)} bi US$`;
+          }
         },
         visualMap: {
           min: minVal,
@@ -60,35 +131,23 @@
           text: ['Maior', 'Menor'],
           realtime: true,
           calculable: true,
-          inRange: { color: ['#f7fbff','#deebf7','#c6dbef','#9ecae1','#6baed6','#4292c6','#2171b5','#08519c','#08306b'] }
+          inRange: { color: cores }
         },
         series: [{
           type: 'map',
           map: 'world',
           roam: true,
           emphasis: { label: { show: true } },
-          data: serieMapa
+          data: [...serieMapa, ...serieSemDados]
         }]
       };
 
       mapa.setOption(opcoesMapa);
-
-      // Interação: clique no país → atualizar gráfico de linha
-      mapa.on('click', function(params) {
-        const pais = params.name;
-        atualizarLinha(linha, dados, pais);
-      });
-
-      // Inicializa vazio
-      linha.setOption({
-        title: { text: "Selecione um país no mapa", left: "center" }
-      });
     }
 
     function atualizarLinha(linha, dados, pais) {
       const anos = Object.keys(dados["EXP"]).sort();
 
-      // Converter tudo para bilhões
       const exp = anos.map(ano => {
         const entry = dados["EXP"][ano].find(d => d.name === pais);
         return entry ? entry.us_value / 1e9 : 0;
@@ -117,6 +176,10 @@
           { name:'Exportações', type:'line', smooth:true, data: exp },
           { name:'Importações', type:'line', smooth:true, data: imp },
           { name:'Balança', type:'line', smooth:true, data: bal }
+        ],
+        dataZoom: [
+          { type: 'slider', start: 0, end: 100 },
+          { type: 'inside' }
         ]
       };
 
